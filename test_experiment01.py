@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from baskets import average_linkage_labels, build_panel
+from compare_baskets import pca_kmeans_labels
 from evaluate import split_at
 
 
@@ -15,6 +16,17 @@ class ExperimentTests(unittest.TestCase):
         labels = average_linkage_labels(distances, 3)
         self.assertEqual(labels[2], labels[3])
         self.assertNotEqual(labels[0], labels[1])
+
+    def test_pca_kmeans_groups_stocks_with_similar_return_histories(self):
+        rng = np.random.default_rng(3)
+        patterns = rng.normal(size=(60, 3))
+        histories = np.repeat(patterns, 4, axis=1) + rng.normal(0, .01, size=(60, 12))
+        centered = histories - histories.mean(axis=0)
+        normalized = centered / np.linalg.norm(centered, axis=0)
+        labels = pca_kmeans_labels(normalized, 3)
+        self.assertEqual(len(np.unique(labels)), 3)
+        np.testing.assert_array_equal(labels, np.repeat(labels[::4], 4))
+        np.testing.assert_array_equal(labels, pca_kmeans_labels(normalized, 3))
 
     def test_future_prices_change_labels_without_changing_features(self):
         rng = np.random.default_rng(3)

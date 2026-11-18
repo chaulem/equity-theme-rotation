@@ -2,6 +2,8 @@
 
 This project studies how to form equity baskets from historical co-movement and forecast their relative performance. It evaluates out-of-sample forecasts before considering execution and trading costs.
 
+The [research pipeline and work board](PIPELINE.md) tracks feature decisions, experiment results, and open tasks before holdout evaluation.
+
 ## Experiment 01 — Momentum persistence
 
 Does the fraction of recent sessions in which a basket outperforms SPY improve its five-session return ranking? Both Ridge models use the same baskets, relative strength, breadth, and unusual volume. The second model adds the fraction of the last 10 sessions in which the basket outperformed SPY.
@@ -27,6 +29,14 @@ python experiment01.py evaluate
 
 After freezing the specification, rebuild without `--through` and run `python experiment01.py evaluate --holdout` to evaluate the final period.
 
+## Basket formation comparison
+
+```sh
+python compare_baskets.py --prices data/stage27_prices.csv --volume data/stage27_volume.csv
+```
+
+PCA keeps five unwhitened components of the same normalized 60-session return histories used by hierarchical clustering. K-means uses five seeded starts and requests ten clusters. Both methods keep baskets with at least three names and refit Ridge with the persistence features and the same penalty (`100`). The comparison reports basket sizes, daily Rank IC, and realized top-two returns on common validation dates through 2022. The top-two selection gain uses that method's equally weighted candidate baskets as its benchmark.
+
 ## Later experiments
 
-Compare basket formation with PCA and K-means and fixed industry groups. Test options-volume features and reversal filters in separate comparisons. Study ETF execution only after evaluating the forecasts.
+Compare basket formation with fixed industry groups. Test options-volume features and reversal filters in separate comparisons. Study ETF execution only after evaluating the forecasts.

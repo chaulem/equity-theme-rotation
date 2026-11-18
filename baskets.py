@@ -94,7 +94,12 @@ def average_linkage_labels(distances: np.ndarray, clusters: int) -> np.ndarray:
     return np.unique([root(i) for i in range(size)], return_inverse=True)[1]
 
 
-def build_panel(prices, volumes, start=None, through=None):
+def hierarchical_labels(normalized, clusters):
+    distances = np.clip(1 - (normalized.T @ normalized), 0, 2)
+    return average_linkage_labels(distances, clusters)
+
+
+def build_panel(prices, volumes, start=None, through=None, *, cluster_labels=hierarchical_labels):
     """Build point-in-time features and separate five-session labels."""
     if through is not None:
         prices = prices.loc[:through]
@@ -131,8 +136,7 @@ def build_panel(prices, volumes, start=None, through=None):
             continue
 
         normalized = centered[:, norm > 0] / norm[norm > 0]
-        distances = np.clip(1 - (normalized.T @ normalized), 0, 2)
-        groups = average_linkage_labels(distances, CLUSTERS)
+        groups = cluster_labels(normalized, CLUSTERS)
         last = end + HORIZON
         for group in range(CLUSTERS):
             members = columns[groups == group]
